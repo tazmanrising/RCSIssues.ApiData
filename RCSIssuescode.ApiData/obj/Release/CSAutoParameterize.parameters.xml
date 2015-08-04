@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<parameters>
+  <parameter name="DemoContext-Web.config Connection String" description="DemoContext Connection String used in web.config by the application to access the database." defaultValue="Data Source=(LocalDb)\v11.0;Initial Catalog=DemoDatabase;Integrated Security=SSPI;" tags="SqlConnectionString">
+    <parameterEntry kind="XmlFile" scope="C:\\dev\\RCSIssuesWebApi\\RCSIssuescode\.ApiData\\obj\\Release\\Package\\PackageTmp\\Web\.config$" match="/configuration/connectionStrings/add[@name='DemoContext']/@connectionString" />
+  </parameter>
+  <parameter name="ConnectionString-Web.config Connection String" description="ConnectionString Connection String used in web.config by the application to access the database." defaultValue="Data Source=SQLDEV3\DS3;Initial Catalog=ESO;User ID=eso;Password=rwesodoc1" tags="SqlConnectionString">
+    <parameterEntry kind="XmlFile" scope="C:\\dev\\RCSIssuesWebApi\\RCSIssuescode\.ApiData\\obj\\Release\\Package\\PackageTmp\\Web\.config$" match="/configuration/connectionStrings/add[@name='ConnectionString']/@connectionString" />
+  </parameter>
+</parameters>

@@ -1,0 +1,86 @@
+﻿
+<br /><br />
+
+<div>
+	<div data-ng-view></div>
+</div>
+
+<script>
+var app = angular.module('app', ['ngRoute']);
+
+
+	app.config(function ($routeProvider) {
+		$routeProvider
+			.when('/view1', //  '/'  works too
+				{
+					controller: 'SimpleController',
+					templateUrl: '../Partials/View1.html'
+				})
+			.when('/view2',
+				{
+					controller: 'SimpleController',
+					templateUrl: '../Partials/View2.html'
+				})
+			.otherwise({ redirectTo: '/view1' });    // '/'   works too
+	});
+
+	// FYI  with a service, you don't create an object 
+	// the function is the object 
+	//define a factory  (could do a service or provider as well
+	//they differ in how they return the data
+	//  in function($http)   we can inject in the angular $http object
+	// of which with the http object we could do get/put/post/delete calls
+	//  to restful api's
+	// with a factory, you creat an object
+	app.factory('simpleFactory', function () {
+		var customers = [
+			{ name: 'John smith', city: 'Phoenix' },
+			{ name: 'Jane Doe', city: 'Arlington' },
+			{ name: 'Tom Thumb', city: 'Lafayette'}
+		];
+		
+		var factory = {};
+		// if this WAS a service then you instead would do
+		// this.getCustomers = function () {   ... }  
+		factory.getCustomers = function () {
+			// if we passed in $http to that outer function above, not the 
+			// not the function () right above 2 lines up , we could do an 
+			// async  ajax call with a promise 
+			return customers;
+		};
+
+		factory.postCustomer = function (customer) {
+			//code
+		};
+
+		return factory;
+
+	});
+
+
+
+	app.controller('SimpleController', function ($scope, simpleFactory) {
+		$scope.customers = [];
+		
+		init();
+
+		function init() {
+			$scope.customers = simpleFactory.getCustomers();
+		}
+	
+
+		$scope.addCustomer = function () {
+			//push a new item into the array
+			$scope.customers.push(
+					{
+						name: $scope.newCustomer.name,
+						city: $scope.newCustomer.city   //object literal
+					});
+
+		};
+
+	});
+
+
+
+</script>

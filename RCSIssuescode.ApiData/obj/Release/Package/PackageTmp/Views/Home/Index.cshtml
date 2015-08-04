@@ -1,0 +1,158 @@
+﻿<script type="text/javascript">
+	// Global variable to hold data
+	// Load the Visualization API and the piechart package.
+	google.load('visualization', '1', { packages: ['corechart', 'table'] });
+</script> 
+
+
+<script type="text/javascript">
+	$(function () {
+		$.ajax(
+		{
+			type: 'POST',
+			dataType: 'json',
+			contentType: 'application/json',
+			url: '../api/Charting/getproblem',
+			data: '{}',
+			success: function (response) {
+				if (response.hasOwnProperty("d"))
+				{
+					drawchart(response.d); // calling method
+				} else {
+					//drawchart(response); // calling method
+					drawchart2(response);
+				}
+				
+			},
+
+			error: function () { // (jqXHR, textStatus, errorThrown) {
+				//console.log(jqXHR.responseText || textStatus)
+				alert("Error loading data! Please try again.");
+			}
+		});
+	})
+
+
+
+  
+	function drawchart(dataValues) {  
+		// Callback that creates and populates a data table,  
+		// instantiates the pie chart, passes in the data and  
+		// draws it.  
+		var data = new google.visualization.DataTable();  
+  
+		data.addColumn('string', 'problemName');
+		data.addColumn('number', 'counted');
+    
+		for (var i = 0; i < dataValues.length; i++)   
+		{  
+			data.addRow([dataValues[i].problemName, dataValues[i].counted]);
+		}  
+		// Instantiate and draw our chart, passing in some options  
+		var chart =  new google.visualization.ColumnChart(document.getElementById('chartdiv'));  
+  
+		chart.draw(data,  
+		  {  
+		  	title: "Total Issues",  
+		  	position: "top",  
+		  	fontsize: "18px",  
+		  	chartArea: { width: '75%' },  
+		  });  
+	}  
+
+	////////////////////////
+
+	function drawchart2(dataValues) {
+		// Callback that creates and populates a data table,  
+		// instantiates the pie chart, passes in the data and  
+		// draws it.  
+
+		var data = new google.visualization.DataTable();
+
+		data.addColumn('string', 'Problem Name');
+		data.addColumn('number', 'Issues Amount');
+
+		for (var i = 0; i < dataValues.length; i++) {
+			data.addRow([dataValues[i].problemName, dataValues[i].counted]);
+		}
+		
+		var formatter = new google.visualization.NumberFormat({
+			pattern: '##,###',
+			fractionDigits: 2
+		});
+		formatter.format(data, 1);
+		
+		var view = new google.visualization.DataView(data);
+
+		view.setColumns([0,1,
+						   {
+						   	calc: "stringify",
+						   	sourceColumn: 1,
+						   	type: "string",
+						   	role: "annotation"
+						   }
+						   ]);
+		
+		
+
+		var options = {
+			title: 'Total Issues',
+			chartArea: { width: '40%' },
+			//colors: ['#b0120a', '#ffab91'],
+			colors: ['green', 'red','blue'],
+			hAxis: {
+				title: 'Number of Issues',
+				minValue: 0
+			},
+			bar: { groupWidth: "95%" },
+			legend: { position: "none"},
+			//vAxis: {
+			//	title: 'All Issues'
+			//}
+		};
+
+		
+		//var formatter = new google.visualization.NumberFormat({suffix: '.00'});
+		//formatter.format(view, 1);
+
+		//var formatter = new google.visualization.NumberFormat(
+		//  { negativeColor: 'red', negativeParens: true, pattern: '$###,###' });
+		//formatter.format(view, 1);
+
+		//var view2 = new google.visualization.DataView(data);
+		//view2.setColumns([0, 1]);
+
+		// Instantiate and draw our chart, passing in some options  
+		var chart = new google.visualization.BarChart(document.getElementById('chartdiv2'));
+		//chart.draw(data, options);
+		chart.draw(view, options);
+
+	
+
+		var table = new google.visualization.Table(document.getElementById('table_sort_div'));
+		table.draw(data, options);
+
+		google.visualization.events.addListener(table, 'sort',
+		  function (event) {
+		  	data.sort([{ column: event.column, desc: !event.ascending }]);
+		  	chart.draw(data);
+		  });
+	
+
+	}
+
+</script> 
+
+
+<form id="form1">
+
+	@*<div id="chartdiv" style="width: 800px; height: 600px;">
+	</div>*@
+
+
+	<div id="table_sort_div" style="width: 800px; height: 300px;"></div>
+
+	<br /><br />
+	<div id="chartdiv2" style="width: 800px; height: 700px;">
+	</div>
+</form>  

@@ -1,0 +1,9 @@
+﻿<div class="container">
+	<h3>View 2</h3>
+	City:
+	<br />
+	<input type="text" data-ng-model="city" />
+	<ul>
+		<li data-ng-repeat="cust in customers | filter:city | orderBy:'city'">{{ cust.name }} - {{cust.city}}</li>
+	</ul>
+</div>

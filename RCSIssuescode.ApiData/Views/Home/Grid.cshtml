@@ -1,0 +1,135 @@
+﻿
+<br />
+<div class="container">
+	Name: <input type="text" data-ng-model="xname" /> {{ xname }}   @*2 way data binding*@
+</div>
+
+<br />
+
+@*<div class="container" data-ng-init="names=['Dave','Tom','Brian']">
+	<h3>
+		Looping with the ng-repeat directive
+	</h3>
+	<ul>
+		<li data-ng-repeat="personName in names">{{ personName }}</li>
+	</ul>
+</div>*@
+
+<br />
+
+@*<div class="container" data-ng-init="customers=[{fullname: 'John smith', city: 'Phoenix'}, {fullname: 'Jane Doe', city: 'Arlington'}]">*@
+@*<div class="container" data-ng-controller="SimpleController">
+
+	FullName:
+	<br />
+	<input type="text" data-ng-model="fullname" /> {{ fullname }}
+	<br />
+	<ul>
+		<li data-ng-repeat="cust in customers | filter:fullname | orderBy:'city'">{{ cust.fullname }} - {{cust.city}}</li>
+	</ul>
+</div>*@
+
+
+	<div>
+		<div data-ng-view></div>
+	</div>
+
+
+
+<script>
+
+
+	// Does not work ,  probably from the ng-app that was already there..
+	//function SimpleController($scope) {
+	//	$scope.customers = [
+	//		{ fullname: 'John smith', city: 'Phoenix' },
+	//		{ fullname: 'Jane Doe', city: 'Arlington' }
+	//	];
+	//}
+
+
+
+
+
+	//Works,   External Function     - but no anoynomous
+	//var app = angular.module('app', []);
+
+	//function SimpleController($scope) {
+	//	$scope.customers = [
+	//		{ fullname: 'John smith', city: 'Phoenix' },
+	//		{ fullname: 'Jane Doe', city: 'Arlington' }
+	//	];
+	//}
+	//app.controller('SimpleController', SimpleController);
+
+
+
+
+	// pass name as a string as an anonymous function 
+
+	//var app = angular.module('app', []);
+
+	//app.controller('SimpleController', ['$scope', function($scope) {
+	//	$scope.customers = [
+	//		{ fullname: 'John smith', city: 'Phoenix' },
+	//		{ fullname: 'Jane Doe', city: 'Arlington' }
+	//	];
+	//}]);
+
+
+
+	//var app = angular.module('app', []);
+	var app = angular.module('app', ['ngRoute']);
+
+	app.config(function ($routeProvider) {
+		$routeProvider
+			.when('/view1', //  '/'  works too
+				{
+					controller: 'SimpleController',
+					templateUrl: '../Partials/View1.html'
+				})
+			.when('/view2',
+				{
+					controller: 'SimpleController',
+					templateUrl: '../Partials/View2.html'
+				})
+			.otherwise({ redirectTo: '/view1' });    // '/'   works too
+	});
+
+	app.controller('SimpleController', function ($scope) {
+		$scope.customers = [
+			{ name: 'John smith', city: 'Phoenix' },
+			{ name: 'Jane Doe', city: 'Arlington' }
+		];
+
+		$scope.addCustomer = function () {
+			//push a new item into the array
+			$scope.customers.push(
+					{
+						name: $scope.newCustomer.name,
+						city: $scope.newCustomer.city   //object literal
+					});
+
+		};
+
+	});
+
+
+
+	// some people like this... easy to prototype 
+	//var app = angular.module('app', []);
+
+	//var controllers = {};
+	//controllers.SimpleController = function ($scope) {
+	//	$scope.customers = [
+	//		{ fullname: 'John smith', city: 'Phoenix' },
+	//		{ fullname: 'Jane Doe', city: 'Arlington' }
+	//	];
+	//};
+	//app.controller(controllers);
+
+
+
+
+
+</script>

@@ -1,0 +1,786 @@
+﻿@model PagedList.IPagedList<RCSIssues.ApiData.Models.tblTips>
+@using PagedList.Mvc;
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+<div class="row"> </div>
+<br />
+<div class="container-fluid">
+
+    <div class="row">
+        Add Search criteria
+    </div>
+    <br />
+
+
+    <div class="row">
+        <button id="addFilter" onclick="addFilter();" type="button" class="btn btn-success" aria-label="Left Align">
+            <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"> Add</span>
+        </button>
+        <button id="addDateFilter" onclick="addDateFilter();" type="button" class="btn btn-info" aria-label="Left Align">
+            <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"> Add -Date</span>
+        </button>
+        <!--
+        <button id="addTest" type="button" class="ct btn btn-danger" aria-label="Left Align">
+            <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"> Add -Date</span>
+        </button>
+        -->
+    </div>
+
+
+
+</div>
+
+<br />
+<table class="table table-striped" id="table-data">
+    <tr>
+        <td>&nbsp;</td>
+        <td>Column</td>
+        <td>Condition</td>
+        <td>Value</td>
+        <td>Delete</td>
+    </tr>
+    <tr class="tr_clone">
+        <td>Where</td>
+        <td>
+            <select class="form-control" id="selectNumber">
+                <option>Choose a Column</option>
+            </select>
+        </td>
+        <td>
+            <select class="form-control" id="condition"></select>
+        </td>
+        <td><input class="form-control" type="text" id="conditionValue" /></td>
+        <td>
+            <button id="subtractFilter" onclick="subtractFilter(this);" type="button" class="btn btn-danger" aria-label="Left Align">
+                <span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
+            </button>
+        </td>
+    </tr>
+
+</table>
+
+<br>
+<table class="table table-striped" id="table-date"></table>
+
+
+<div class="container-fluid">
+
+    <div id="buttonFilters" class="row">
+        <button id="applyFilter" onclick="applyFilters(this);" type="button" class="btn btn-primary">Apply Filter</button>
+        <button id="resetFilter" onclick="clearFilters(this);" type="button" class="btn btn-default">Clear Filters</button>
+    </div>
+
+</div>
+
+<br>
+
+<h1>Usage</h1>
+<hr>
+     The Advanced Search Widget requires some javascript to be setup.  Example:
+<div class="code-panel">
+    <pre><code class="javascript"> <span class="hljs-tag">&lt;<span class="hljs-title">script</span>&gt;</span>
+          var twodimcolumnarray = [["Id", "number"], ["Location", "string"], ["Address", "string"], ["District", "number"], ["40 Acre", "string"], ["In Code", "string"], ["E/W Coords", "string"], ["N/S Coords", "string"], ["RAS", "boolean"], ["MyDate", "Date"]];
+    <span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
+</code></pre>
+</div>
+
+
+Call main script:
+
+<div class="code-panel">
+    <pre><code class="javascript"><span class="hljs-tag">&lt;<span class="hljs-title">script</span> src="http://docweb/srp-searchwidget/searchwidget.js"><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
+</code></pre>
+</div>
+
+Query to Execute:
+
+<div class="code-panel"><pre><code class="sql"><div id="codeSnip">@ViewBag.builtString</div></code></pre></div>  
+
+@using (Html.BeginForm("GridWidget", "Home", FormMethod.Get))
+{
+	<p>
+		@*Find by Title or?: @Html.TextBox("SearchString", ViewBag.CurrentFilter as string)*@
+		<input type="hidden" id="builtString" name="builtString" />
+		<input onclick="setBuild();" class="btn btn-primary" type="submit" value="Search" />
+	</p>
+}
+
+<br />
+
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-4">Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount</div>
+		<div class="col-md-4">@ViewBag.TotalCount Total Records</div>
+		<div class="col-md-4">
+			<button type="button" class="btn btn-primary">Add</button>
+			@*@Html.ActionLink("Create New", "Create")*@
+		</div>
+	</div>
+</div>
+<div class="container-fluid">
+
+	@Html.PagedListPager(Model, page => Url.Action("Index",
+	new { page, sortOrder = ViewBag.CurrentSort, currentFilter = ViewBag.CurrentFilter }))
+</div>
+
+@using (Html.BeginForm("GridWidget", "Home", FormMethod.Get))
+{
+	<p>
+		Find by Title or?: @Html.TextBox("SearchString", ViewBag.CurrentFilter as string)
+		<input type="submit" value="Search" />
+	</p>
+}
+<table class="table">
+	<tr>
+		<th colspan="4">Sort By:</th>
+	</tr>
+	<tr>
+		<th>
+			@Html.ActionLink("Title", "Index", new { sortOrder = ViewBag.TitleSortParm, currentFilter = ViewBag.CurrentFilter })
+		</th>
+		<th>
+			Date Created
+		</th>
+		<th>
+			@Html.ActionLink("Created By", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter = ViewBag.CurrentFilter })
+		</th>
+		<th>Category</th>
+	</tr>
+
+
+	@foreach (var item in Model)
+	{
+		<tr>
+			<td colspan="3">
+				@Html.DisplayFor(modelItem => item.title)<br /><br />
+				@Html.DisplayFor(modelItem => item.body)<br /><br />
+				<button type="button" class="btn btn-default">Image</button><br /><br />
+				<button type="button" class="btn btn-success">Add Comment</button><br /><br />
+			</td>
+			<td>
+				<button type="button" class="btn btn-warning">Edit</button>
+				<button type="button" class="btn btn-danger">Delete</button>
+				@Html.ActionLink("Edit", "Edit", new { id = item.id }) |
+				@Html.ActionLink("Details", "Details", new { id = item.id }) |
+				@Html.ActionLink("Delete", "Delete", new { id = item.id })
+			</td>
+		</tr>
+	}
+
+</table>
+<br />
+
+<div class="container-fluid">
+	Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+
+
+	@Html.PagedListPager(Model, page => Url.Action("Index",
+	new { page, sortOrder = ViewBag.CurrentSort, currentFilter = ViewBag.CurrentFilter }))
+</div>
+
+
+
+
+
+
+
+<script>
+
+    /*
+    $(function() {
+        $( "#from" ).datepicker({
+          defaultDate: "+1w",
+          changeMonth: true,
+          numberOfMonths: 3,
+          onClose: function( selectedDate ) {
+            $( "#to" ).datepicker( "option", "minDate", selectedDate );
+          }
+        });
+        $( "#to" ).datepicker({
+          defaultDate: "+1w",
+          changeMonth: true,
+          numberOfMonths: 3,
+          onClose: function( selectedDate ) {
+            $( "#from" ).datepicker( "option", "maxDate", selectedDate );
+          }
+        });
+      });
+    */
+
+    $(document).on('focus', "[id^=from]", function () {
+        //alert('focus');
+        $(this).datepicker();
+    });
+
+    $(document).on('focus', "[id^=to]", function () {
+        //alert('focus');
+        $(this).datepicker();
+    });
+
+	// OLD way
+    //var columnArray = new Array("Id", "Location", "Address", "District", "40 Acre", "In Code", "E/W Coords", "N/S Coords", "RAS");
+	//var columnDataTypeArray = new Array("number", "string", "string", "number", "string", "string", "string", "string", "boolean");
+    //var conditionArray = new Array("Greater Than", "Less Than", "Begin", "Ends", "Contains", "Equals", "Like");
+
+
+	// NEW  multidim arry
+
+	// USE FOR gate-codes
+    //var twodimcolumnarray = [["Id", "number"], ["Location", "string"], ["Address", "string"], ["District", "number"], ["40 Acre", "string"], ["In Code", "string"], ["E/W Coords", "string"], ["N/S Coords", "string"], ["RAS", "boolean"], ["MyDate", "Date"]];
+
+	// doc-home tbltips  (news)
+    var twodimcolumnarray = [["id", "number"], ["[group]", "number"], ["title", "string"], ["body", "string"], ["createdBy", "string"], ["created", "Date"], ["updatedBy", "string"], ["updated", "Date"]];
+
+    var twodimconditionArray = [["Greater Than", ">"], ["Less Than", "<"], ["Begin", "LIKE '%"], ["Ends", "LIKE %'"], ["Contains", "LIKE '% %'"], ["Equals", "="], ["Like", "LIKE'% %'"]];
+
+
+
+
+
+    $(document).on('focus', "[id^=conditionValue]", function (event) {
+        //alert('focus');
+        //alert(this.value);
+        //console.log(event.target.id);
+
+        //$(document).off('keypress', "[id^="+condtionID+"]");
+
+        var condtionID = "";
+        condtionID = event.target.id;
+        console.log("condtionID=" + condtionID);
+
+        //$('[condtionID] :selected').each(function(i, selected){
+        //    column[i] = $(selected).text();
+
+
+        //take everything AFTER the conditionValue and append to selectNumber  , unless it is only selectNumber
+
+        //var str = "conditionValue123";
+        var end = "";
+        var selNum = "";
+        var fullSelNum = "";
+        var selNumValue = "";
+
+        end = condtionID.substring(14, 20);
+        selNum = "selectNumber" + end;
+
+        fullSelNum = document.getElementById(selNum);//.value;
+        selNumValue = fullSelNum.value;
+
+        //console.log("selNum=" + selNum);
+        //console.log("selNumValue=" + selNumValue);
+
+        // rules
+
+        // if end is first row not dynamically generated then account for that
+        // if value is  "Choose a Column, they cannot type ....
+        // if value is string  type whatever ?
+        // if value is number,  then only numeric
+        var regex = "/^([^0-9]*)$/";
+
+
+        //$(document).off('keypress', "[id^="+condtionID+"]");
+
+        //var conValue = [];
+        $('[id^=conditionValue]').each(function (y) {
+            ////conValue[y] = this.value;
+            //console.log("=" + this.value);
+            $(document).off('keypress', "[id^=" + condtionID + "]");
+        });
+
+
+
+        ///////////////////////////////////////////////////////////////////
+
+
+        //if (selNumValue === "Choose a Column") {
+
+        //    //console.log(selNum + " =do not allow typing");
+        //    //$('input').keypress(function(e) {
+        //    //    e.preventDefault();
+        //    //});
+        //    $(document).on('keypress', "[id^=" + condtionID + end + "]", function (event) {
+        //        event.preventDefault();
+        //    });
+
+        //} else if (selNumValue === "number") {
+        //    // $('input').keypress(function(e) {
+
+        //    $(document).on('keypress', "[id^=" + condtionID + end + "]", function (event) {
+        //        //return true;
+
+        //        console.log(selNum + ' =back in');
+        //        //console.log("selNum=" + selNum);
+        //        var a = [];
+        //        var k = event.which;
+
+        //        for (i = 48; i < 58; i++)
+        //            a.push(i);
+
+        //        if (!(a.indexOf(k) >= 0))
+        //            event.preventDefault();
+
+        //        //$('span').text('KeyCode: '+k);
+        //    });
+        //    console.log("number only");
+        //} else if (selNumValue === "string") {
+        //    $(document).on('keypress', "[id^=" + condtionID + end + "]", function (event) {
+        //        console.log("allow all");
+        //    });
+        //} else {
+        //    $(document).on('keypress', "[id^=" + condtionID + end + "]", function (event) {
+        //        console.log("else");
+        //    });
+        //}
+
+
+
+    });
+
+
+
+
+    var randomNumber = function () {
+        var minimum = 2;
+        var maximum = 1000;
+        var randomnumber = Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
+        return randomnumber;
+    }
+
+
+    function addDateFilter() {
+        //console.log(randomNumber());
+        var randNum = randomNumber();
+        var table = document.getElementById("table-date");
+        var row = table.insertRow(-1);
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        var cell3 = row.insertCell(2);
+        var cell4 = row.insertCell(3);
+        var cell5 = row.insertCell(4);
+
+        cell1.innerHTML = '<select id=dateandor' + randNum + ' class="form-control"><option value=1>AND</option><option value=2>OR</option></select>';
+        //cell2.innerHTML = "From";
+        //cell3.innerHTML = '<input id=dateFrom' + randNum + ' type="date">';
+        //addDate();
+        cell2.innerHTML = '<select class="form-control" id=dateselectNumber' + randNum + '><option>Choose a Column</option></select>';
+        cell3.innerHTML = '<label for="from">From&nbsp;</label><input type="text" id=from' + randNum + '>';
+        cell4.innerHTML = '<label for="to">To&nbsp;</label><input type="text" id=to' + randNum + '>';
+        cell5.innerHTML = '<button id=datesubtractFilter' + randNum + ' type="button" onclick="datesubtractFilter(this);" class="btn btn-danger" aria-label="Left Align"><span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span></button>';
+
+        var finalSelectNumber = "dateselectNumber" + randNum;
+        twoDimColumnCreator(twodimcolumnarray, finalSelectNumber);
+    }
+
+    function addDate() {
+        if (!Modernizr.inputtypes['date']) {
+            $('input[type=date]').datepicker();
+        }
+    }
+    /*
+    if (Modernizr.touch && Modernizr.inputtypes.date) {
+        document.getElementById('myDate').type = 'date';
+    } else {
+        $('#myDate').datepicker();
+    }
+    */
+
+
+
+
+
+    function addFilter() {
+        var minimum = 2;
+        var maximum = 1000;
+        var randNum = randomNumber();
+
+        var table = document.getElementById("table-data");
+        var row = table.insertRow(-1);  // 0 top
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        var cell3 = row.insertCell(2);
+        var cell4 = row.insertCell(3);
+        var cell5 = row.insertCell(4);
+        cell1.innerHTML = '<select id=andor' + randNum + ' class="form-control"><option value=1>AND</option><option value=2>OR</option></select>';
+        cell2.innerHTML = '<select class="form-control" id=selectNumber' + randNum + '><option>Choose a Column</option></select>';
+        cell3.innerHTML = '<select class="form-control" id=condition' + randNum + '></select>';
+        cell4.innerHTML = '<input class="form-control" type="text" id=conditionValue' + randNum + '>';
+        cell5.innerHTML = '<button id=subtractFilter' + randNum + ' type="button" onclick="subtractFilter(this);" class="btn btn-danger" aria-label="Left Align"><span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span></button>';
+
+        var finalSelectNumber = "selectNumber" + randNum;
+        var finalCondition = "condition" + randNum;
+        //columnCreator(columnArray, finalSelectNumber);
+        twoDimColumnCreator(twodimcolumnarray, finalSelectNumber);
+        twoDimColumnCreator(twodimconditionArray, finalCondition);
+
+    }
+
+    function subtractFilter(r) {
+        var i = r.parentNode.parentNode.rowIndex;
+        document.getElementById("table-data").deleteRow(i);
+    }
+
+    function datesubtractFilter(r) {
+        var i = r.parentNode.parentNode.rowIndex;
+        document.getElementById("table-date").deleteRow(i);
+    }
+
+
+
+
+    function clearFilters() {
+        var table = document.getElementById("table-data");
+        table.innerHTML = "";
+        var datetable = document.getElementById("table-date");
+        datetable.innerHTML = "";
+        var x = document.getElementById("codeSnip");
+        x.innerHTML = "";
+    }
+
+    //function rulesEngine() {
+    //}
+
+    var rulesEngine = function (condition, conValue) {
+        //var minimum = 2;
+        //var maximum = 1000;
+        //var rules = Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
+
+        var rules;
+
+        switch (condition) {
+            case "LIKE'% %'":
+                rules = "LIKE '%" + conValue + "%'";
+                break;
+            default:
+                rules = condition + " " + conValue + " ";
+                break;
+        }
+
+        return rules;
+    }
+
+
+
+
+    function applyFilters(val) {
+
+        var x = document.getElementById("codeSnip");
+        x.innerHTML = "";
+
+        var newDiv = document.createElement("div");
+        var newContent = document.createTextNode("Hi there and greetings!");
+
+        var andor = [];
+        $('[id^=andor] :selected').each(function (a, selected) {
+            andor[a] = $(selected).text();
+        });
+
+        var column = [];
+        $('[id^=selectNumber] :selected').each(function (i, selected) {
+            column[i] = $(selected).text();
+            //alert(i);
+            //newContent = document.createTextNode(column[i] + " ");
+            //x.appendChild(newContent);
+        });
+
+        //var myStringArray = ["Hello","World"];
+        var arrayLength = column.length;
+        for (var i = 0; i < arrayLength; i++) {
+            //alert(column[i]);
+            //Do something
+        }
+
+        var condition = [];
+        $('[id^=condition] :selected').each(function (z, selected) {
+            condition[z] = $(selected).val();
+            //newContent = document.createTextNode(condition[z] + " ");
+            //x.appendChild(newContent);
+        });
+
+        var conValue = [];
+        $('[id^=conditionValue]').each(function (y) {
+            conValue[y] = this.value;
+            //newContent = document.createTextNode(conValue[y] + " ");
+            //x.appendChild(newContent);
+        });
+
+
+        var datecolumn = [];
+        $('[id^=dateselectNumber] :selected').each(function (i, selected) {
+            datecolumn[i] = $(selected).text();
+        });
+
+        var dateandor = [];
+        $('[id^=dateandor] :selected').each(function (a, selected) {
+            dateandor[a] = $(selected).text();
+        });
+
+        var from = [];
+        $('[id^=from]').each(function (b) {
+            from[b] = this.value;
+        });
+
+        var to = [];
+        $('[id^=to]').each(function (c) {
+            to[c] = this.value;
+        });
+
+        var dateFrom = 0;
+        var query = "";
+        var datequery = "";
+        var totalLength = column.length;
+        var datetotalLength = datecolumn.length;
+
+
+        // ISSUE:   condition[i] and conValue[i] ARE not going to match up with skipping them for date from and to
+        //  going to need to have counters for those
+
+        // RULES ENGINE  - TODO  :  break all this out into some other functions
+
+        var getRules;
+
+        for (var i = 0; i < totalLength; i++) {
+            if (i === 0) {
+                query += "WHERE " + column[i] + " " + rulesEngine(condition[i], conValue[i]) + " ";
+
+            } else {
+                query += andor[i - 1] + " " + column[i] + " " + rulesEngine(condition[i], conValue[i]);
+            }
+        }
+
+
+        /////////////////////////////////
+        // DATE ******************
+
+
+        for (var i = 0; i < datetotalLength; i++) {
+            //if(i === 0){
+            //    datequery += " AND "; //"WHERE " + datecolumn[i] + " ";
+
+            //}else{
+
+            datequery += " " + dateandor[i] + " " + datecolumn[i] + " BETWEEN " + from[i] + " AND " + to[i];
+
+
+            //}
+        }
+
+
+
+
+        /////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+        //console.log('before query');
+        //console.log(query);
+
+        query = query.replace('undefined', '');
+        datequery = datequery.replace('undefined', '');
+        query += datequery;
+        newContent = document.createTextNode(query);
+        x.appendChild(newContent);
+
+        $('#builtString').val(query);
+
+        //alert(query);
+
+        //newContent =  document.createTextNode(" AND ");
+        //x.appendChild(newContent);
+
+
+
+        /*
+        var suffix;
+        $("#table-data tbody").on("click", "tr", function (event) {
+            $("[id^=conditionValue]").on('click', function() {
+                suffix = this.id.match(/\d+/);
+                //alert(suffix);
+            });
+        });
+        var g = "selectNumber" + suffix;
+        var s = $("#" + g + " option:selected").text();
+        */
+        //alert(val);
+
+        /*
+        $('.form-control').each(function(i, obj) {
+        //test
+            //console.log(obj);
+
+
+        });
+        */
+
+    }
+
+
+    function setBuild() {
+    	
+    	var x = document.getElementById("codeSnip");
+    	if (x.innerHTML.length > 0)
+    	{
+    		$('#builtString').val(x.innerHTML);
+    	} else {
+    		x.innerHTML = $('#builtString').val();
+    	}
+    	    	
+    	var t = $('#builtString').val();
+    	//alert("x.innerhtml = " + x.innerHTML);
+    	//alert("hidden = " + t);
+    	return true;
+    }
+
+
+    function columnCreator(columnArray, selectId) {
+        var dropdown = document.getElementById(selectId);
+        for (var i = 0; i < columnArray.length; ++i) {
+            // Append the element to the end of Array list
+            dropdown[dropdown.length] = new Option(columnArray[i], columnArray[i]);
+        }
+
+    }
+
+
+
+    function twoDimColumnCreator(columnArray, selectId) {
+
+        var dropdown = document.getElementById(selectId);
+
+        for (var i = 0; i < columnArray.length; i++) {
+
+            dropdown[dropdown.length] = new Option(columnArray[i][0], columnArray[i][1]);
+
+            var cube = columnArray[i];
+
+            for (var j = 0; j < cube.length; j++) {
+                //display("cube[" + i + "][" + j + "] = " + cube[j]);
+                // ALL
+                //console.log("twodimcolumnarray[" + i + "][" + j + "] = " + cube[j]);
+                // column names
+            }
+        }
+
+
+
+    }
+
+    /*
+    //if(el){
+    document.querySelector('input[type="button"]').addEventListener('click', function() {
+      alert(1);
+      var el = document.createElement('li');
+      var id = new Date().getTime().toString();
+      el.id = id;
+      el.innerHTML = id;
+      document.querySelector('.ct').appendChild(el);
+    });
+
+    document.querySelector('body').addEventListener('click', function(event) {
+      alert(2);
+      if (event.target.tagName.toLowerCase() === 'li') {
+        alert(event.target.id);
+      }
+    });
+
+    */
+
+    /*
+    var suffix;
+         $("#table-data tbody").on("click", "tr", function (event) {
+             alert('test');
+            $("[id^=conditionValue]").on('click', function() {
+                suffix = this.id.match(/\d+/);
+                alert(suffix);
+            });
+        });
+
+     $(document).on('click', conditionValue, function() {
+        alert('cond');
+
+     });
+    */
+
+
+    /*
+    $("#buttonFilters").on("click", "#applyFilter", function () {
+        alert('in');
+    });
+    */
+
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    document.addEventListener("DOMContentLoaded", function (event) {
+        //alert(3);
+        //columnCreator(columnArray, "selectNumber");
+        //twoDimColumnCreator(columnArray, "selectNumber");
+        //columnCreator(conditionArray, "condition");
+        twoDimColumnCreator(twodimcolumnarray, "selectNumber");
+        twoDimColumnCreator(twodimconditionArray, "condition");
+
+
+
+    	@*@Html.TextBox("SearchString", ViewBag.CurrentFilter as string)*@
+
+		@*@if (ViewBag.builtString != null) {
+			//var x = document.getElementById("codeSnip");
+			//x.innerHTML = "test"; //ViewBag.builtString
+		}*@
+
+		@*@{
+		var safeStringValue = ViewBag.someStringValue
+			.Replace("\\", "\\\\")
+			.Replace("'", "\\');
+		}
+    	var someStringValue = '@(safeStringValue)';*@
+		
+
+
+    	/*
+         document.querySelector('input[type="button"]').addEventListener('click', function() {
+           alert(1);
+           var el = document.createElement('li');
+           var id = new Date().getTime().toString();
+           el.id = id;
+           el.innerHTML = id;
+           document.querySelector('.ct').appendChild(el);
+         });
+
+         document.querySelector('body').addEventListener('click', function(event) {
+           alert(2);
+           if (event.target.tagName.toLowerCase() === 'li') {
+             alert(event.target.id);
+           }
+         });
+         */
+
+
+    	/*
+        var selects = document.querySelectorAll('select');
+
+        for (var i=0; i<selects.length; ++i) {
+          selects[i].addEventListener('change', clickFuncSelect);
+        }
+
+        function clickFuncSelect() {
+          alert(this.id);
+        }
+        */
+
+
+
+    });
+
+    //(function() {
+
+    //})();
+
+
+
+
+
+
+
+
+</script>
